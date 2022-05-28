@@ -1,0 +1,5 @@
+./gen_www.py 
+#aws s3 rm                s3://imustcook.com/crossword/    --recursive
+#aws s3 rm                s3://www.imustcook.com/crossword --recursive
+aws s3 cp www            s3://imustcook.com/crossword     --recursive
+aws s3 cp www            s3://www.imustcook.com/crossword --recursive
