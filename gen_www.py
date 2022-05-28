@@ -11,11 +11,12 @@ import string
 import re
 import datetime
 
-subjects = [ [ 'italian_basic',         '#a99887',      True ],
-             [ 'italian_advanced',      '#53af8b',      True ],
-             [ 'italian_expressions',   '#587a8f',      False ],
-             [ 'italian_vulgar',        '#95b8e3',      False ],
-             [ 'all_lists',             '#c095e3',      False ] ]
+subjects = [ [ 'italian_basic',                 '#a99887',      True ],
+             [ 'italian_advanced',              '#53af8b',      True ],
+             [ 'italian_expressions_common',    '#587a8f',      False ],
+             [ 'italian_expressions_other',     '#008080',      False ],
+             [ 'italian_vulgar',                '#95b8e3',      False ],
+             [ 'all_lists',                     '#c095e3',      False ] ]
 
 def die( msg, prefix='ERROR: ' ):
     print( prefix + msg )
