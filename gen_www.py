@@ -89,6 +89,7 @@ s += f'</head>\n'
 s += f'<title>Italian-English Crossword Puzzles</title>\n'
 s += f'<h1>Italian-English Crossword Puzzles</h1>\n'
 s += f'<body>\n'
+s += f'<h3><a href="https://www.imustcook.com">Click here for some Italian food recipes (because words are not enough)</a></h3>'
 
 #-----------------------------------------------------------------------
 # Generate the individual puzzles.
