@@ -27,111 +27,111 @@
 
 // <=3 letter words are already excluded
 // these are common words with more then 3 letters to excluded
-const std::map<std::string, bool> common_words = { 
-     {"avere", true}, 
-     {"averla", true},
-     {"averlo", true},
-     {"averle", true},
-     {"averli", true},
-     {"aver", true},
-     {"essere", true}, 
-     {"esserla", true}, 
-     {"esserlo", true}, 
-     {"esserle", true}, 
-     {"esserli", true}, 
-     {"stare", true},
-     {"stai", true},
-     {"stiamo", true},
-     {"state", true},
-     {"stanno", true},
-     {"fare", true}, 
-     {"farla", true},
-     {"farlo", true},
-     {"farle", true},
-     {"farli", true},
-     {"farsi", true},
-     {"dare", true},
-     {"come", true},
-     {"così", true},
-     {"sono", true}, 
-     {"miei", true},
-     {"tuoi", true},
-     {"suoi", true},
-     {"vuoi", true},
-     {"dall", true},
-     {"dalla", true},
-     {"dallo", true},
-     {"dagli", true}, 
-     {"dalle", true}, 
-     {"dell", true},
-     {"della", true},
-     {"dello", true},
-     {"degli", true}, 
-     {"delle", true}, 
-     {"nell", true},
-     {"nella", true},
-     {"nello", true},
-     {"negli", true}, 
-     {"nelle", true}, 
-     {"sull", true},
-     {"sugli", true},
-     {"sulla", true},
-     {"sullo", true},
-     {"sulle", true},
-     {"all", true},
-     {"alla", true},
-     {"allo", true},
-     {"alle", true},
-     {"agli", true},
-     {"cosa", true},
-     {"cose", true},
-     {"anno", true},
-     {"anni", true},
-     {"mese", true},
-     {"mesi", true},
-     {"idea", true},
-     {"idee", true},
-     {"area", true},
-     {"golf", true},
-     {"ieri", true},
-     {"ecco", true},
-     {"vita", true},
-     {"sole", true},
-     {"tuba", true},
-     {"film", true},
+const std::map<std::wstring, bool> common_words = { 
+     {L"avere", true}, 
+     {L"averla", true},
+     {L"averlo", true},
+     {L"averle", true},
+     {L"averli", true},
+     {L"aver", true},
+     {L"essere", true}, 
+     {L"esserla", true}, 
+     {L"esserlo", true}, 
+     {L"esserle", true}, 
+     {L"esserli", true}, 
+     {L"stare", true},
+     {L"stai", true},
+     {L"stiamo", true},
+     {L"state", true},
+     {L"stanno", true},
+     {L"fare", true}, 
+     {L"farla", true},
+     {L"farlo", true},
+     {L"farle", true},
+     {L"farli", true},
+     {L"farsi", true},
+     {L"dare", true},
+     {L"come", true},
+     {L"così", true},
+     {L"sono", true}, 
+     {L"miei", true},
+     {L"tuoi", true},
+     {L"suoi", true},
+     {L"vuoi", true},
+     {L"dall", true},
+     {L"dalla", true},
+     {L"dallo", true},
+     {L"dagli", true}, 
+     {L"dalle", true}, 
+     {L"dell", true},
+     {L"della", true},
+     {L"dello", true},
+     {L"degli", true}, 
+     {L"delle", true}, 
+     {L"nell", true},
+     {L"nella", true},
+     {L"nello", true},
+     {L"negli", true}, 
+     {L"nelle", true}, 
+     {L"sull", true},
+     {L"sugli", true},
+     {L"sulla", true},
+     {L"sullo", true},
+     {L"sulle", true},
+     {L"all", true},
+     {L"alla", true},
+     {L"allo", true},
+     {L"alle", true},
+     {L"agli", true},
+     {L"cosa", true},
+     {L"cose", true},
+     {L"anno", true},
+     {L"anni", true},
+     {L"mese", true},
+     {L"mesi", true},
+     {L"idea", true},
+     {L"idee", true},
+     {L"area", true},
+     {L"golf", true},
+     {L"ieri", true},
+     {L"ecco", true},
+     {L"vita", true},
+     {L"sole", true},
+     {L"tuba", true},
+     {L"film", true},
 
-     {"than", true},
-     {"each", true},
-     {"with", true},
-     {"does", true},
-     {"doesn", true},
-     {"must", true},
-     {"here", true},
-     {"bass", true},
-     {"take", true},
-     {"away", true},
-     {"club", true},
+     {L"than", true},
+     {L"each", true},
+     {L"with", true},
+     {L"does", true},
+     {L"doesn", true},
+     {L"must", true},
+     {L"here", true},
+     {L"bass", true},
+     {L"take", true},
+     {L"away", true},
+     {L"club", true},
 };
 
-inline bool is_good_char( char c )
+inline bool is_good_char( wchar_t c )
 {
-    return (c >= 'a' && c <= 'z') ||
-           c == 'à' || c == 'á' || c == 'è' || 'é' || c == 'ì' || c == 'í' || c == 'ò' || c == 'ó' || c == 'ù' || c == 'ú';
+    return (c >= L'a' && c <= L'z') ||
+           c == L'à' || c == L'á' || c == L'è' || c == L'é' || c == L'ì' || c == L'í' || c == L'ò' || c == L'ó' || c == L'ù' || c == L'ú';
 }
 
-inline char lower( char c )
+inline wchar_t lower( wchar_t c )
 {
-    if ( c >= 'A' && c <= 'Z' ) return 'a' + c - 'A';
-    if ( c == 'À' )             return 'à';
-    if ( c == 'Á' )             return 'á';
-    if ( c == 'È' )             return 'è';
-    if ( c == 'É' )             return 'é';
-    if ( c == 'Ì' )             return 'ì';
-    if ( c == 'Í' )             return 'í';
-    if ( c == 'Ò' )             return 'ò';
-    if ( c == 'Ó' )             return 'ó';
-    if ( c == 'Ù' )             return 'ù';
-    if ( c == 'Ú' )             return 'ú';
+    if ( c >= L'A' && c <= L'Z' ) return L'a' + c - L'A';
+    if ( c == L'À' )              return L'à';
+    if ( c == L'Á' )              return L'á';
+    if ( c == L'È' )              return L'è';
+    if ( c == L'É' )              return L'é';
+    if ( c == L'Ì' )              return L'ì';
+    if ( c == L'Í' )              return L'í';
+    if ( c == L'Ò' )              return L'ò';
+    if ( c == L'Ó' )              return L'ó';
+    if ( c == L'Ù' )              return L'ù';
+    if ( c == L'Ú' )              return L'ú';
     return c;
 }
 
@@ -141,23 +141,23 @@ inline char lower( char c )
 //-----------------------------------------------------------------------
 struct PickedWord
 {
-    std::string         word;
+    std::wstring         word;
     uint32_t            pos;               // in answer
 };
 
-void pick_words( std::string a, std::vector<PickedWord>& words )
+void pick_words( std::wstring a, std::vector<PickedWord>& words )
 {
     words.clear();
-    std::string word = "";
+    std::wstring word = L"";
     uint32_t    word_pos = 0;
     bool        in_parens = False
     size_t      a_len = a.length;
     for( size_t i = 0; i < a_len; i++ )
     {
-        char ch = a[i];
-        if ( ch == ' ' | ch == '\t' | ch == '\'' | ch == '’' | ch == '/' | ch == '(' | ch == ')' | 
-             ch == '!' | ch == '?' | ch == '.' | ch == ',' | ch == '-' | ch == ':' | ch == '"' | ch == '[' | ch == ']' | 
-             ch == '0' | ch == '1' | ch == '2' | ch == '3' | ch == '4' | ch == '5' | ch == '6' | ch == '7' | ch == '8' | ch == '9' ) {
+        wchar_t ch = a[i];
+        if ( ch == L' L' | ch == L'\t' | ch == L'\'' | ch == L'’' | ch == L'/' | ch == L'(' | ch == L')' | 
+             ch == L'!' | ch == L'?' | ch == L'.' | ch == L',' | ch == L'-' | ch == L':' | ch == L'"' | ch == L'[' | ch == L']' | 
+             ch == L'0' | ch == L'1' | ch == L'2' | ch == L'3' | ch == L'4' | ch == L'5' | ch == L'6' | ch == L'7' | ch == L'8' | ch == L'9' ) {
             if ( word != "" ) {
                 if ( !in_parens ) {
                     Word w;
@@ -165,22 +165,22 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
                     w.pos  = word_pos;
                     words.push_back( w );
                 }
-                word = "";
+                word = L"";
             }
-            if ( ch == '(' ) {
-                dassert( !in_parens, "cannot support nested parens" );
+            if ( ch == L'(' ) {
+                dassert( !in_parens, L"cannot support nested parens" );
                 in_parens = true;
-            } else if ( ch == ')' ) {
-                dassert( in_parens, "no matching left paren" );
+            } else if ( ch == L')' ) {
+                dassert( in_parens, L"no matching left paren" );
                 in_parens = false;
         } else if ( !in_parens ) {
-            if ( word == "" ) word_pos = i;
-            char c = lower( ch );
-            dassert( is_good_char( c ), "bad character + '" + std::string( 1, ch ) + " in answer: " + a );
+            if ( word == L"" ) word_pos = i;
+            wchar_t c = lower( ch );
+            dassert( is_good_char( c ), L"bad character + '" + std::wstring( 1, ch ) + L" in answer: " + a );
             word += c;
         }
     }
-    if ( word != "" ) {
+    if ( word != L"" ) {
         Word w;
         w.word = word;
         w.pos  = pos;
@@ -194,7 +194,7 @@ int main( int argc, const char * argv[] )
     // process command line args
     //-----------------------------------------------------------------------
     if len( sys.argv ) < 2: die( 'usage: puz.py <subjects> [options]', '' )
-    std::string subjects_s = argv[1];
+    std::wstring subjects_s = argv[1];
     auto     subjects           = split( subjects_s, ',' );
     uint32_t seed               = uint32_t( clock_time() );
     uint32_t thread_cnt         = thread_hardware_thread_cnt();   // actual number of CPU HW threads
@@ -205,11 +205,11 @@ int main( int argc, const char * argv[] )
     uint32_t start_pct          = 0;
     uint32_t end_pct            = 100;
     bool     html               = true;
-    std::string title           = "";
+    std::wstring title           = "";
 
     for( int i = 2; i < argc; i++ )
     {
-        std::string arg = argv[i];
+        std::wstring arg = argv[i];
                if ( arg == "-debug" ) {                         __debug = std::stoi( argv[++i] ); // in sys.h
         } else if ( arg == "-seed" ) {                          seed = std::stoi( argv[++i] );
         } else if ( arg == "-thread_cnt" ) {                    thread_cnt = std::stoi( argv[++i] );
@@ -235,8 +235,8 @@ int main( int argc, const char * argv[] )
     //-----------------------------------------------------------------------
     struct Entry 
     {
-        std::string     q;
-        std::string     a;
+        std::wstring     q;
+        std::wstring     a;
     };
     std::vector< Entry > entries;
     for( auto subject: subjects )
@@ -277,7 +277,7 @@ int main( int argc, const char * argv[] )
     //-----------------------------------------------------------------------
     struct Word
     {
-        std::string     word;
+        std::wstring    word;
         uint32_t        pos;
         const Entry&    entry;
     };
