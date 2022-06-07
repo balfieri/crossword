@@ -1,5 +1,8 @@
 words.txt
 words2.txt
 new_exprs.txt
+*.o
+*.dSYM
 *.out
+gen_puz
 www/*.html

@@ -109,7 +109,7 @@ inline std::vector<std::string> split( std::string s, char c=' ' )
     return v;
 }
 
-inline std::string split( std::vector<std::string> v, std::string by="" )
+inline std::string join( std::vector<std::string> v, std::string by="" )
 {
     std::string s = "";
     for( size_t i = 0; i < v.size(); i++ )
