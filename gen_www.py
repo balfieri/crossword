@@ -16,6 +16,7 @@ subjects = [ [ 'italian_basic',                 '#a99887',      True ],
              [ 'italian_expressions_common',    '#587a8f',      False ],
              [ 'italian_expressions_other',     '#008080',      False ],
              [ 'italian_vulgar',                '#95b8e3',      False ],
+             [ 'italian_passato_remoto',        '#95b8e3',      False ],
              [ 'all_lists',                     '#c095e3',      False ] ]
 
 def die( msg, prefix='ERROR: ' ):
