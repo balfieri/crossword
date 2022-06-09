@@ -113,29 +113,6 @@ const std::map<std::string, bool> common_words = {
      {"club", true},
 };
 
-inline bool is_good_char( char c )
-{
-    return (c >= 'a' && c <= 'z') ||
-           true;
-//         c == 'à' || c == 'á' || c == 'è' || c == 'é' || c == 'ì' || c == 'í' || c == 'ò' || c == 'ó' || c == 'ù' || c == 'ú';
-}
-
-inline char lower( char c )
-{
-    if ( c >= 'A' && c <= 'Z' ) return 'a' + c - 'A';
-//  if ( c == 'À' )              return 'à';
-//  if ( c == 'Á' )              return 'á';
-//  if ( c == 'È' )              return 'è';
-//  if ( c == 'É' )              return 'é';
-//  if ( c == 'Ì' )              return 'ì';
-//  if ( c == 'Í' )              return 'í';
-//  if ( c == 'Ò' )              return 'ò';
-//  if ( c == 'Ó' )              return 'ó';
-//  if ( c == 'Ù' )              return 'ù';
-//  if ( c == 'Ú' )              return 'ú';
-    return c;
-}
-
 //-----------------------------------------------------------------------
 // Pull out all interesting answer words and put them into an array, 
 // with a reference back to the original question.
@@ -177,9 +154,26 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
             }
         } else if ( !in_parens ) {
             if ( word == "" ) word_pos = i;
-            char c = lower( ch );
-            dassert( is_good_char( c ), "bad character + '" + std::string( 1, ch ) + " in answer: " + a );
-            word += c;
+            if ( ch != '\xc3' ) {
+                // not 16-bit char
+                if ( ch >= 'A' && ch <= 'Z' ) {
+                    ch = 'a' + ch - 'A';
+                }
+                dassert( ch >= 'a' && ch <= 'z', "bad character: " + std::string( 1, ch ) + " in answer: " + a )
+                word += ch;
+            } else {
+                // 16-bit char
+                // allowed: àáèéìíòóùú
+                word += ch;
+                dassert( i < (a_len-1), "incomplete special character in answer: " + a );
+                ch = a[++i];
+                if ( ch >= '\x80' && ch <= '\x9f' ) {
+                    ch = 0xa0 + ch - 0x80;              // make lower-case
+                }
+                dassert( ch == '\xa0' || ch == '\xa1' || ch == '\xa8' || ch == '\xa9' || ch == '\xac' || ch == '\xad' || ch == '\xb2' || ch == '\xb3' || ch == '\xb9' || ch == '\xba',
+                         "bad special character in answer: " + a );
+                word += ch;
+            }
         }
     }
     if ( word != "" ) {
