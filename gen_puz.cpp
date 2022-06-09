@@ -114,6 +114,23 @@ const std::map<std::string, bool> common_words = {
 };
 
 //-----------------------------------------------------------------------
+// Read a line from a file w/o newline and return it as a string.
+// Return "" if nothing else in the file.
+//-----------------------------------------------------------------------
+std::string readline( std::ifstream& in )
+{
+    std::string s;
+    while( !in.eof() ) 
+    {
+        char c;
+        in.get( c );
+        s += c;
+        if ( c == '\n' ) break;
+    }
+    return s;
+}
+
+//-----------------------------------------------------------------------
 // Pull out all interesting answer words and put them into an array, 
 // with a reference back to the original question.
 //-----------------------------------------------------------------------
@@ -225,10 +242,11 @@ int main( int argc, const char * argv[] )
 
     if ( title == "" ) title = join( subjects, "_" ) + "_" + std::to_string(seed);
 
-#if 0
     //-----------------------------------------------------------------------
     // Read in <subject>.txt files.
     //-----------------------------------------------------------------------
+    std::regex ws1( "^\\s+" );
+    std::regex ws2( "\\s+$" );
     struct Entry 
     {
         std::string     q;
@@ -237,35 +255,42 @@ int main( int argc, const char * argv[] )
     std::vector< Entry > entries;
     for( auto subject: subjects )
     {
-        filename = subject + '.txt'
-        Q = open( filename, 'r' )
-        line_num = 0
-        while True:
-            question = Q.readline()
-            if question == '': break
-            line_num += 1
-            question = re.sub( r'^\s+', '', question )
-            question = re.sub( r'\s+$', '', question )
-            if len(question) == 0 or question[0] == '#': continue
+        std::string filename = subject + ".txt";
+        std::ifstream Q( filename );
+        dassert( Q.is_open(), "could not open file " + filename + " for input" );
+        uint32_t line_num = 0;
+        for( ;; )
+        {
+            std::string question = readline( Q );
+            if ( question == "" ) break;
+            line_num++;
+            question = replace( question, ws1, "" );
+            question = replace( question, ws2, "" );
+            if ( question.length() == 0 or question[0] == '#' ) continue;
 
-            answer = Q.readline()
-            answer = re.sub( r'^\s+', '', answer )
-            answer = re.sub( r'\s+$', '', answer )
-            answer = answer.lower()
-            if answer == '': die( f'question on line {line_num} is not followed by a non-blank answer on the next line: {question}' )
-            line_num += 1
+            std::string answer = readline( Q );
+            answer = replace( answer, ws1, "" );
+            answer = replace( answer, ws2, "" );
+            dassert( answer.length() != 0, "question on line " + std::to_string(line_num) + " is not followed by a non-blank answer on the next line: " + question );
+            line_num++;
 
-            if reverse:
-                tmp = question
-                question = answer
-                answer = tmp
+            if ( reverse ) {
+                std::string tmp = question;
+                question = answer;
+                answer = tmp;
+            }
 
-            entries.append( [question, answer] )
-        Q.close()
+            Entry entry;
+            entry.q = question;
+            entry.a = answer;
+            entries.push_back( entry );
+        }
+        Q.close();
+    }
 
-    entry_cnt = len(entries)
-    entry_first = int(start_pct*entry_cnt/100.0)
-    entry_last  = min(int(end_pct*entry_cnt/100.0), entry_cnt-1)
+    uint32_t entry_cnt   = entries.size();
+    uint32_t entry_first = float(start_pct)*float(entry_cnt)/100.0;
+    uint32_t entry_last  = std::min( uint32_t( float(end_pct)*float(entry_cnt)/100.0 ), entry_cnt-1 );
 
     //-----------------------------------------------------------------------
     // Pull out all interesting answer words and put them into an array, 
@@ -275,24 +300,24 @@ int main( int argc, const char * argv[] )
     {
         std::string     word;
         uint32_t        pos;
-        const Entry&    entry;
+        const Entry *   entry;
     };
     std::vector<Word> words;
-    for( uint32_t i = 0; entry_first; i <= entry_last; i++ )
+    for( uint32_t i = entry_first; i <= entry_last; i++ )
     {
         const Entry& e = entries[i];
-        auto aa = split( e.a, "; " ); 
-        for( a: aa ) 
+        auto aa = split( e.a, ';' ); 
+        for( auto a: aa ) 
         {
             std::vector< PickedWord > picked_words;
             pick_words( a, picked_words );
-            for( pw: picked_words )
+            for( auto pw: picked_words )
             {
-                if ( w.word.length > 3 && !common_words.contains( w.word ) ) {
+                if ( pw.word.length() > 3 && common_words.find( pw.word ) == common_words.end() ) { 
                     Word w;
                     w.word  = pw.word;
                     w.pos   = pw.pos;
-                    w.entry = e;
+                    w.entry = &e;
                     words.push_back( w );
                 }
             }
@@ -300,6 +325,7 @@ int main( int argc, const char * argv[] )
     }
     uint32_t word_cnt = words.size();
 
+#if 0
     //-----------------------------------------------------------------------
     // Generate the puzzle from the data structure using this simple algorithm:
     //
