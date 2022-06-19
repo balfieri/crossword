@@ -150,9 +150,10 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
     for( size_t i = 0; i < a_len; i++ )
     {
         char ch = a[i];
-        if ( ch == ' ' | ch == '\t' | ch == '\'' | ch == '\'' | ch == '/' | ch == '(' | ch == ')' | 
-             ch == '!' | ch == '?' | ch == '.' | ch == ',' | ch == '-' | ch == ':' | ch == '"' | ch == '[' | ch == ']' | 
-             ch == '0' | ch == '1' | ch == '2' | ch == '3' | ch == '4' | ch == '5' | ch == '6' | ch == '7' | ch == '8' | ch == '9' ) {
+        if ( ch == ' ' || ch == '\t' || ch == '\'' || ch == '\'' || ch == '/' || ch == '(' || ch == ')' || 
+             ch == '!' || ch == '?' || ch == '.' || ch == ',' || ch == '-' || ch == ':' || ch == '"' || ch == '[' || ch == ']' || 
+             ch == '0' || ch == '1' || ch == '2' || ch == '3' || ch == '4' || ch == '5' || ch == '6' || ch == '7' || ch == '8' || ch == '9' ||
+             ch == '\xe2' ) {
             if ( word != "" ) {
                 if ( !in_parens ) {
                     PickedWord w;
@@ -162,7 +163,12 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
                 }
                 word = "";
             }
-            if ( ch == '(' ) {
+            if ( ch == '\xe2' ) {
+                ch = a[++i];
+                dassert( ch == '\x80', "did not get 0x80 after 0xe2 for quote" );
+                ch = a[++i];
+                dassert( ch == '\x99', "did not get 0x99 after 0xe2 0x80 for quote" );
+            } else if ( ch == '(' ) {
                 dassert( !in_parens, "cannot support nested parens" );
                 in_parens = true;
             } else if ( ch == ')' ) {
@@ -176,7 +182,15 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
                 if ( ch >= 'A' && ch <= 'Z' ) {
                     ch = 'a' + ch - 'A';
                 }
-                dassert( ch >= 'a' && ch <= 'z', "bad character: " + std::string( 1, ch ) + " in answer: " + a )
+                if ( ch < 'a' || ch > 'z' ) {
+                    std::cout << "ERROR: bad character in answer at pos " << i << "\n";
+                    for( size_t ii = 0; ii < a_len; ii++ )
+                    {
+                        ch = a[ii];
+                        std::cout << ii << ": " << std::string( 1, ch ) << " (0x" << std::hex << int(uint8_t(ch)) << std::dec << ")\n";
+                    }
+                    exit( 1 );
+                }
                 word += ch;
             } else {
                 // 16-bit char
