@@ -45,5 +45,5 @@ while i < len( sys.argv ):
         extra_args += f' {arg} {sys.argv[i]}'
         i += 1
 
-cmd( f'./gen_puz.py {subjects}{extra_args} > www/one.html' )
+cmd( f'./gen_puz {subjects}{extra_args} > www/one.html' )
 cmd( f'open -a Safari www/one.html' )

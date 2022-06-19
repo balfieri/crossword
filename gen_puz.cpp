@@ -52,7 +52,8 @@ const std::map<std::string, bool> common_words = {
      {"farsi", true},
      {"dare", true},
      {"come", true},
-     {"così", true},
+//   {"così", true},
+     {"cos4", true},    // transformed
      {"sono", true}, 
      {"miei", true},
      {"tuoi", true},
@@ -160,7 +161,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
              ch == '\xe2' ) {
             if ( word != "" ) {
                 if ( !in_parens ) {
-                    words.push_back( PickedWord( word, word_pos, i ) );
+                    words.push_back( PickedWord( word, word_pos, i-1 ) );
                 }
                 word = "";
             }
@@ -184,7 +185,6 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
                     ch = 'a' + ch - 'A';
                 }
                 if ( ch < 'a' || ch > 'z' ) {
-                    std::cout << "ERROR: bad character in answer at pos " << i << "\n";
                     for( size_t ii = 0; ii < a_len; ii++ )
                     {
                         ch = a[ii];
@@ -224,7 +224,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
         }
     }
     if ( word != "" ) {
-        words.push_back( PickedWord( word, word_pos, a_len ) );
+        words.push_back( PickedWord( word, word_pos, a_len-1 ) );
     }
 }
 
@@ -337,8 +337,9 @@ int main( int argc, const char * argv[] )
     {
         const Entry& e = entries[i];
         auto aa = split( e.a, ';' ); 
-        for( auto a: aa ) 
+        for( auto _a: aa ) 
         {
+            std::string a = replace( _a, ws1, "" );
             std::vector< PickedWord > picked_words;
             pick_words( a, picked_words );
             for( auto pw: picked_words )
@@ -347,7 +348,7 @@ int main( int argc, const char * argv[] )
                     Word w;
                     w.word     = pw.word;
                     w.pos      = pw.pos;
-                    w.pos_last = pw.pos;
+                    w.pos_last = pw.pos_last;
                     w.a        = a;
                     w.entry    = &e;
                     words.push_back( w );
@@ -356,7 +357,6 @@ int main( int argc, const char * argv[] )
         }
     }
     uint32_t word_cnt = words.size();
-    std::cout << "word_cnt=" << word_cnt << "\n";
 
     //-----------------------------------------------------------------------
     // Generate the puzzle from the data structure using this simple algorithm:
@@ -452,7 +452,7 @@ int main( int argc, const char * argv[] )
                     if ( score != 0 && score > best_score ) {
                         best.word      = word;
                         best.pos       = pos;
-                        best.pos_last  = pos;
+                        best.pos_last  = pos_last;
                         best.a         = a;
                         best.entry     = entry;
                         best.x         = x;
@@ -488,12 +488,12 @@ int main( int argc, const char * argv[] )
                     if ( score != 0 && score > best_score ) {
                         best.word      = word;
                         best.pos       = pos;
-                        best.pos_last  = pos;
+                        best.pos_last  = pos_last;
                         best.a         = a;
                         best.entry     = entry;
                         best.x         = x;
                         best.y         = y;
-                        best.is_across = true;
+                        best.is_across = false;
                         best_score     = score;
                     }
                 }
@@ -657,7 +657,7 @@ int main( int argc, const char * argv[] )
                 for( uint32_t j = 0; j < a.length(); j++ ) 
                 {
                     if ( j >= first && j <= last ) {
-                        a_ += "_";
+                        if ( (j-first) < word.length() ) a_ += "_";
                     } else {
                         a_ += a[j];
                     }

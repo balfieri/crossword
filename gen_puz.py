@@ -249,6 +249,7 @@ for i in range(entry_first, entry_last+1):
             if len( word ) > 3 and not word in common_words:
                 words.append( [word, pos, a, entry] )
 word_cnt = len(words)
+print( f'word_cnt={word_cnt}' )
 
 #-----------------------------------------------------------------------
 # Generate the puzzle from the data structure using this simple algorithm:
