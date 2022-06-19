@@ -27,7 +27,7 @@
 
 // <=3 letter words are already excluded
 // these are common words with more then 3 letters to excluded
-const std::map<std::string, bool> common_words = { 
+const std::map<const char *, bool> common_words = { 
      {"avere", true}, 
      {"averla", true},
      {"averlo", true},
@@ -134,10 +134,14 @@ inline std::string readline( std::ifstream& in )
 // Pull out all interesting answer words and put them into an array, 
 // with a reference back to the original question.
 //-----------------------------------------------------------------------
-struct PickedWord
+class PickedWord
 {
-    std::string         word;
+public:
+    const char *        word;
+    uint32_t            len;
     uint32_t            pos;               // in answer
+
+    inline PickedWord( std::string word, uint32_t pos ) : word(word.c_str()), len(word.length()), pos(pos) {}
 };
 
 void pick_words( std::string a, std::vector<PickedWord>& words )
@@ -156,10 +160,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
              ch == '\xe2' ) {
             if ( word != "" ) {
                 if ( !in_parens ) {
-                    PickedWord w;
-                    w.word = word;
-                    w.pos  = word_pos;
-                    words.push_back( w );
+                    words.push_back( PickedWord( word, word_pos ) );
                 }
                 word = "";
             }
@@ -223,10 +224,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
         }
     }
     if ( word != "" ) {
-        PickedWord w;
-        w.word = word;
-        w.pos  = word_pos;
-        words.push_back( w );
+        words.push_back( PickedWord( word, word_pos ) );
     }
 }
 
@@ -327,7 +325,7 @@ int main( int argc, const char * argv[] )
     //-----------------------------------------------------------------------
     struct Word
     {
-        std::string     word;
+        const char *    word;
         uint32_t        len;
         uint32_t        pos;
         const Entry *   entry;
@@ -343,7 +341,7 @@ int main( int argc, const char * argv[] )
             pick_words( a, picked_words );
             for( auto pw: picked_words )
             {
-                if ( pw.word.length() > 3 && common_words.find( pw.word ) == common_words.end() ) { 
+                if ( pw.len > 3 && common_words.find( pw.word ) == common_words.end() ) { 
                     Word w;
                     w.word  = pw.word;
                     w.pos   = pw.pos;
