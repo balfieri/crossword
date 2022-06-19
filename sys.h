@@ -98,11 +98,12 @@ inline std::vector<std::string> split( std::string s, char c=' ' )
     std::string ss = "";
     for( size_t i = 0; i < s.length(); i++ )
     {
-        if ( s[i] == c ) {
+        char ch = s[i];
+        if ( ch == c ) {
             v.push_back( ss );
             ss = "";
         } else {
-            ss += c;
+            ss += ch;
         }
     }
     v.push_back( ss );
