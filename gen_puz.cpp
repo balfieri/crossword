@@ -27,7 +27,7 @@
 
 // <=3 letter words are already excluded
 // these are common words with more then 3 letters to excluded
-const std::map<const char *, bool> common_words = { 
+const std::map<std::string, bool> common_words = { 
      {"avere", true}, 
      {"averla", true},
      {"averlo", true},
@@ -137,11 +137,11 @@ inline std::string readline( std::ifstream& in )
 class PickedWord
 {
 public:
-    const char *        word;
-    uint32_t            len;
-    uint32_t            pos;               // in answer
+    std::string         word;
+    uint32_t            pos;                    // in answer
+    uint32_t            pos_last;               // in answer
 
-    inline PickedWord( std::string word, uint32_t pos ) : word(word.c_str()), len(word.length()), pos(pos) {}
+    inline PickedWord( std::string word, uint32_t pos, uint32_t pos_last ) : word(word), pos(pos), pos_last(pos_last) {}
 };
 
 void pick_words( std::string a, std::vector<PickedWord>& words )
@@ -160,7 +160,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
              ch == '\xe2' ) {
             if ( word != "" ) {
                 if ( !in_parens ) {
-                    words.push_back( PickedWord( word, word_pos ) );
+                    words.push_back( PickedWord( word, word_pos, i ) );
                 }
                 word = "";
             }
@@ -224,7 +224,7 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
         }
     }
     if ( word != "" ) {
-        words.push_back( PickedWord( word, word_pos ) );
+        words.push_back( PickedWord( word, word_pos, a_len ) );
     }
 }
 
@@ -325,10 +325,11 @@ int main( int argc, const char * argv[] )
     //-----------------------------------------------------------------------
     struct Word
     {
-        const char *    word;
+        std::string     word;
         uint32_t        len;
         uint32_t        pos;
-        const char *    a;
+        uint32_t        pos_last;
+        std::string     a;
         const Entry *   entry;
     };
     std::vector<Word> words;
@@ -342,18 +343,20 @@ int main( int argc, const char * argv[] )
             pick_words( a, picked_words );
             for( auto pw: picked_words )
             {
-                if ( pw.len > 3 && common_words.find( pw.word ) == common_words.end() ) { 
+                if ( pw.word.length() > 3 && common_words.find( pw.word ) == common_words.end() ) { 
                     Word w;
-                    w.word  = pw.word;
-                    w.pos   = pw.pos;
-                    w.a     = a.c_str();
-                    w.entry = &e;
+                    w.word     = pw.word;
+                    w.pos      = pw.pos;
+                    w.pos_last = pw.pos;
+                    w.a        = a;
+                    w.entry    = &e;
                     words.push_back( w );
                 }
             }
         }
     }
     uint32_t word_cnt = words.size();
+    std::cout << "word_cnt=" << word_cnt << "\n";
 
     //-----------------------------------------------------------------------
     // Generate the puzzle from the data structure using this simple algorithm:
@@ -368,10 +371,10 @@ int main( int argc, const char * argv[] )
     //-----------------------------------------------------------------------
     struct Clue
     {
-        const char *    word;
-        uint32_t        len;
+        std::string     word;
         uint32_t        pos;
-        const char *    a;
+        uint32_t        pos_last;
+        std::string     a;
         const Entry *   entry;
         uint32_t        x;
         uint32_t        y;
@@ -394,10 +397,6 @@ int main( int argc, const char * argv[] )
             across_grid[x][y] = '-';
             down_grid[x][y]   = '-';
             clue_grid[x][y]   = new Clue[2];    // 1=across, 0=down
-            for( uint32_t z = 0; z < 2; z++ )
-            {
-                clue_grid[x][y][z].len = 0;     // no clue there yet
-            }
         }
     }
 
@@ -411,15 +410,16 @@ int main( int argc, const char * argv[] )
         const Entry *entry = info.entry;
         if ( entries_used.find( entry ) != entries_used.end() ) continue;
 
-        const char * word = info.word;
-        uint32_t     word_len = info.len;
+        std::string  word = info.word;
+        uint32_t     word_len = word.length();
         if ( i < attempts_large && word_len < larger_cutoff ) continue;
+        const char * word_cs = word.c_str();
 
-        uint32_t     pos = info.pos;
-        const char * a   = info.a;
+        uint32_t     pos      = info.pos;
+        uint32_t     pos_last = info.pos_last;
+        std::string  a        = info.a;
 
         Clue best;
-        best.len = 0;
         uint32_t best_score = 0;
 
         for( uint32_t x = 0; x < side; x++ ) 
@@ -438,7 +438,7 @@ int main( int argc, const char * argv[] )
                             score = 0;
                             break;
                         }
-                        char c  = word[ci];
+                        char c  = word_cs[ci];
                         char gc = grid[x+ci][y];
                         if ( c == gc ) {
                             score++;
@@ -450,15 +450,15 @@ int main( int argc, const char * argv[] )
                         }
                     }
                     if ( score != 0 && score > best_score ) {
-                        best.word  = word;
-                        best.len   = word_len;
-                        best.pos   = pos;
-                        best.a     = a;
-                        best.entry = entry;
-                        best.x     = x;
-                        best.y     = y;
+                        best.word      = word;
+                        best.pos       = pos;
+                        best.pos_last  = pos;
+                        best.a         = a;
+                        best.entry     = entry;
+                        best.x         = x;
+                        best.y         = y;
                         best.is_across = true;
-                        best_score = score;
+                        best_score     = score;
                     }
                 }
 
@@ -474,7 +474,7 @@ int main( int argc, const char * argv[] )
                             score = 0;
                             break;
                         }
-                        char c  = word[ci];
+                        char c  = word_cs[ci];
                         char gc = grid[x][y+ci];
                         if ( c == gc ) {
                             score++;
@@ -486,15 +486,15 @@ int main( int argc, const char * argv[] )
                         }
                     }
                     if ( score != 0 && score > best_score ) {
-                        best.word  = word;
-                        best.len   = word_len;
-                        best.pos   = pos;
-                        best.a     = a;
-                        best.entry = entry;
-                        best.x     = x;
-                        best.y     = y;
-                        best.is_across = false;
-                        best_score = score;
+                        best.word      = word;
+                        best.pos       = pos;
+                        best.pos_last  = pos;
+                        best.a         = a;
+                        best.entry     = entry;
+                        best.x         = x;
+                        best.y         = y;
+                        best.is_across = true;
+                        best_score     = score;
                     }
                 }
             }
@@ -515,7 +515,7 @@ int main( int argc, const char * argv[] )
                     down_grid[x][y+ci] = word[ci];
                 }
             }
-            dassert( clue_grid[x][y][is_across].len == 0, "already have a clue in place" );
+            dassert( clue_grid[x][y][is_across].word == "", "already have a clue in place" );
             clue_grid[x][y][is_across] = best;
         }
     }
@@ -613,7 +613,7 @@ int main( int argc, const char * argv[] )
             } else {
                 std::cout << ", ";
             }
-            if ( clue_grid[x][y][0].len != 0 || clue_grid[x][y][1].len != 0 ) {
+            if ( clue_grid[x][y][0].word != "" || clue_grid[x][y][1].word != "" ) {
                 std::cout << clue_num;
                 clue_grid[x][y][0].num = clue_num;
                 clue_grid[x][y][1].num = clue_num;
@@ -643,22 +643,21 @@ int main( int argc, const char * argv[] )
             for( uint32_t x = 0; x < side; x++ )
             {
                 const Clue& cinfo = clue_grid[x][y][is_across];
-                if ( cinfo.len == 0 ) continue;
+                if ( cinfo.word == "" ) continue;
                 if ( have_one ) std::cout << ", "; 
                 have_one = true;
                 std::cout << "\n";
                 uint32_t     num    = cinfo.num;
-                const char * word   = cinfo.word;
+                std::string  word   = cinfo.word;
                 uint32_t     first  = cinfo.pos;
-                uint32_t     last   = first + cinfo.len - 1;  // not right
-                const char * a      = cinfo.a;
-                uint32_t     a_len  = strlen( a );
+                uint32_t     last   = cinfo.pos_last;
+                std::string  a      = cinfo.a;
                 std::string  q      = cinfo.entry->q;
                 std::string  a_     = "";
-                for( uint32_t j = 0; j < a_len; j++ ) 
+                for( uint32_t j = 0; j < a.length(); j++ ) 
                 {
                     if ( j >= first && j <= last ) {
-                        a_ += "-";
+                        a_ += "_";
                     } else {
                         a_ += a[j];
                     }
