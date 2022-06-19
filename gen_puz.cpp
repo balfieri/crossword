@@ -540,6 +540,7 @@ int main( int argc, const char * argv[] )
         std::cout << "<body>\n";
         std::cout << "<script>\n";
         std::cout << "let ipuz =\n";
+    }
 
     // header
     std::cout << "{\n";
