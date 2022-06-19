@@ -117,13 +117,13 @@ const std::map<std::string, bool> common_words = {
 // Read a line from a file w/o newline and return it as a string.
 // Return "" if nothing else in the file.
 //-----------------------------------------------------------------------
-std::string readline( std::ifstream& in )
+inline std::string readline( std::ifstream& in )
 {
-    std::string s;
+    std::string s = "";
     while( !in.eof() ) 
     {
         char c;
-        in.get( c );
+        if ( !in.get( c ) ) break;
         s += c;
         if ( c == '\n' ) break;
     }
