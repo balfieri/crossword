@@ -353,7 +353,6 @@ int main( int argc, const char * argv[] )
     }
     uint32_t word_cnt = words.size();
 
-#if 0
     //-----------------------------------------------------------------------
     // Generate the puzzle from the data structure using this simple algorithm:
     //
@@ -365,21 +364,40 @@ int main( int argc, const char * argv[] )
     //         if score > 0:
     //             add the word to one of the locations with the best score found
     //-----------------------------------------------------------------------
-    grid = []
-    across_grid = []
-    down_grid = []
-    clue_grid = []
-    for x in range(side):
-        grid.append( [] )
-        across_grid.append( [] )
-        down_grid.append( [] )
-        clue_grid.append( [] )
-        for y in range(side):
-            grid[x].append( '-' )
-            across_grid[x].append( '-' )
-            down_grid[x].append( '-' )
-            clue_grid[x].append( {} )
+    struct Clue
+    {
+        const char *    word;
+        uint32_t        len;
+        uint32_t        pos;
+        const Entry *   entry;
+        uint32_t        x;
+        uint32_t        y;
+        bool            is_across;
+    };
+    char ** grid        = new char *[side];
+    char ** across_grid = new char *[side];
+    char ** down_grid   = new char *[side];
+    Clue ***clue_grid   = new Clue **[side];
+    for( uint32_t x = 0; x < side; x++ )
+    {
+        grid[x]        = new char[side];
+        across_grid[x] = new char[side];
+        down_grid[x]   = new char[side];
+        clue_grid[x]   = new Clue*[side];
+        for( uint32_t y = 0; y < side; y++ )
+        {
+            grid[x][y]        = '-';
+            across_grid[x][y] = '-';
+            down_grid[x][y]   = '-';
+            clue_grid[x][y]   = new Clue[2];    // 0=across, 1=down
+            for( uint32_t z = 0; z < 2; z++ )
+            {
+                clue_grid[x][y][z].len = 0;     // no clue there yet
+            }
+        }
+    }
 
+#if 0
     words_used = {}
     large_frac = (0 + rand_n( 80 )) / 100.0
     attempts_large = int( attempts * large_frac )
