@@ -579,18 +579,18 @@ int main( int argc, const char * argv[] )
                 dassert( ch >= '0' && ch <= '9', "unexpected special char in grid" );
                 switch( ch )
                 {
-                    case '0'; std::cout << "À"; break;
-                    case '1'; std::cout << "Á"; break;
-                    case '2'; std::cout << "È"; break;
-                    case '3'; std::cout << "É"; break;
-                    case '4'; std::cout << "Ì"; break;
-                    case '5'; std::cout << "Í"; break;
-                    case '6'; std::cout << "Ò"; break;
-                    case '7'; std::cout << "Ó"; break;
-                    case '8'; std::cout << "Ù"; break;
-                    case '9'; std::cout << "U'"; break;
+                    case '0': std::cout << "À"; break;
+                    case '1': std::cout << "Á"; break;
+                    case '2': std::cout << "È"; break;
+                    case '3': std::cout << "É"; break;
+                    case '4': std::cout << "Ì"; break;
+                    case '5': std::cout << "Í"; break;
+                    case '6': std::cout << "Ò"; break;
+                    case '7': std::cout << "Ó"; break;
+                    case '8': std::cout << "Ù"; break;
+                    case '9': std::cout << "U'"; break;
                     default:  die( "something is wrong" ); break;
-                
+                }            
             }
             std::cout << "\"";
         }
@@ -606,12 +606,13 @@ int main( int argc, const char * argv[] )
     for( uint32_t y = 0; y < side; y++ )
     {
         for( uint32_t x = 0; x < side; x++ )
+        {
             if ( x == 0 ) {
                 std::cout << "    [";
             } else {
                 std::cout << ", ";
             }
-            if ( clue_grid[x][y][0].len != 0 || clue_grid[x][y][1] != 0 ) {
+            if ( clue_grid[x][y][0].len != 0 || clue_grid[x][y][1].len != 0 ) {
                 std::cout << clue_num;
                 clue_grid[x][y][0].num = clue_num;
                 clue_grid[x][y][1].num = clue_num;
@@ -629,38 +630,50 @@ int main( int argc, const char * argv[] )
 
     // clues
     std::cout << "\"clues\": {\n";
-    for which_mc in ['Across', 'Down']:
-        std::cout << "    \"{which_mc}\": [', end='' << "\n";
-        which = which_mc.lower(<< "\n";
-        have_one = False
-        for y in range(side):
-            for x in range(side):
-                cinfo = clue_grid[x][y]
-                if which in cinfo: 
-                    if have_one: print( ', ', end='' << "\n";
-                    have_one = True
-                    print(<< "\n";
-                    winfo = cinfo[which]
-                    num   = cinfo['num']
-                    word  = winfo[0]
-                    first = winfo[1]
-                    last  = first + len(word) - 1 
-                    ans   = winfo[2]
-                    entry = winfo[3]
-                    ques  = entry[0]
-                    ans_  = ''
-                    for i in range(len(ans)):
-                        ans_ += '_' if (i >= first and i <= last) else ans[i]
-                    clue  = f'\"{ques} ==> {ans_}\"' 
-                    std::cout << "        [{num}, {clue}]', end='' << "\n";
-        comma = ',' if which == 'across' else ''
-        std::cout << "\n    ]{comma}' << "\n";
+    for( uint32_t i = 0; i < 2; i++ )
+    {
+        bool        is_across = i == 0;
+        std::string which_mc = is_across ? "Across" : "Down";
+        std::cout << "    \"" << which_mc << "\": [";
+        bool have_one = false;
+        for( uint32_t y = 0; y < side; y++ )
+        {
+            for( uint32_t x = 0; x < side; x++ )
+            {
+                const Clue& cinfo = clue_grid[x][y][is_across];
+                if ( cinfo.len == 0 ) continue;
+                if ( have_one ) std::cout << ", "; 
+                have_one = true;
+                std::cout << "\n";
+                uint32_t     num    = cinfo.num;
+                const char * word   = cinfo.word;
+                uint32_t     first  = cinfo.pos;
+                uint32_t     last   = first + cinfo.len - 1;  // not right
+                const char * a      = cinfo.a;
+                uint32_t     a_len  = strlen( a );
+                std::string  q      = cinfo.entry->q;
+                std::string  a_     = "";
+                for( uint32_t j = 0; j < a_len; j++ ) 
+                {
+                    if ( j >= first && j <= last ) {
+                        a_ += "-";
+                    } else {
+                        a_ += a[j];
+                    }
+                }
+                std::cout << "        [" << num << ", \"" << q << " ==> " << a_ << "\"]";
+            }
+        }
+        std::cout << "\n    ]";
+        if ( is_across ) std::cout << ",";
+        std::cout << "\n";
+    }
     std::cout << "},\n";
     std::cout << "}\n";
 
     if ( html ) {
         std::cout << "text = exolveFromIpuz(ipuz)\n";
-        #std::cout << "text += '\\n    exolve-option: allow-chars:ÀÁÈÉÌÍÒÓÙÚ\\n'\n";
+        //std::cout << "text += '\\n    exolve-option: allow-chars:ÀÁÈÉÌÍÒÓÙÚ\\n'\n";
         std::cout << "text += '\\n    exolve-language: it Latin\\n'\n";
         std::cout << "text += '\\n    exolve-end\\n'\n";
         std::cout << "createExolve(text)\n";
