@@ -236,7 +236,7 @@ int main( int argc, const char * argv[] )
     if (argc < 2) die( "usage: puz.py <subjects> [options]" );
     std::string subjects_s = argv[1];
     auto     subjects           = split( subjects_s, ',' );
-    uint32_t seed               = uint32_t( clock_time() );
+    uint64_t seed               = uint64_t( clock_time() );
     uint32_t thread_cnt         = thread_hardware_thread_cnt();   // actual number of CPU HW threads
     uint32_t side               = 15;
     bool     reverse            = false;
@@ -251,7 +251,7 @@ int main( int argc, const char * argv[] )
     {
         std::string arg = argv[i];
                if ( arg == "-debug" ) {                         __debug = std::stoi( argv[++i] ); // in sys.h
-        } else if ( arg == "-seed" ) {                          seed = std::stoi( argv[++i] );
+        } else if ( arg == "-seed" ) {                          seed = std::stoll( argv[++i] );
         } else if ( arg == "-thread_cnt" ) {                    thread_cnt = std::stoi( argv[++i] );
         } else if ( arg == "-side" ) {                          side = std::stoi( argv[++i] );
         } else if ( arg == "-reverse" ) {                       reverse = std::stoi( argv[++i] );
