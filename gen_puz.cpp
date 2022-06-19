@@ -626,6 +626,7 @@ int main( int argc, const char * argv[] )
         }
         std::cout << "]";
         if ( y != (side-1) ) std::cout << ",";
+        std::cout << "\n";
     }
     std::cout << "]," << "\n";
 
