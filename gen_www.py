@@ -69,6 +69,7 @@ while i < len( sys.argv ):
         die( f'unknown option: {arg}' )
 
 cmd( f'rm -f www/*.html' )
+cmd( f'make gen_puz' )
 
 s = ''
 s += f'<html>\n'
@@ -124,7 +125,7 @@ for subject_info in subjects:
             for i in range(count):
                 title = f'{subject}_s{seed}_r{reverse}'
                 subjects = all_s if subject == 'all_lists' else subject
-                cmd( f'./gen_puz.py {subjects} -side {side} -seed {seed} -reverse {reverse} -start_pct {start_pct} -title {title} > www/{title}.html' )
+                cmd( f'./gen_puz {subjects} -side {side} -seed {seed} -reverse {reverse} -start_pct {start_pct} -title {title} > www/{title}.html' )
                 seed += 1
                 s += f'<a href="{title}.html"><div class="rectangle" style="background-color: {color}">{i}</div></a>\n'
 
