@@ -455,7 +455,7 @@ int main( int argc, const char * argv[] )
                             break;
                         }
                     }
-                    if ( score != 0 && score > best_score ) {
+                    if ( score > 1 && score > best_score ) {
                         best.word      = word;
                         best.pos       = pos;
                         best.pos_last  = pos_last;
@@ -491,7 +491,7 @@ int main( int argc, const char * argv[] )
                             break;
                         }
                     }
-                    if ( score != 0 && score > best_score ) {
+                    if ( score > 1 && score > best_score ) {
                         best.word      = word;
                         best.pos       = pos;
                         best.pos_last  = pos_last;
