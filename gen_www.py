@@ -52,7 +52,7 @@ day = today.day
 seed = year*10000 + month*100 + day
 seed *= 10000
 
-i = 2
+i = 1
 while i < len( sys.argv ):
     arg = sys.argv[i]
     i += 1
@@ -64,6 +64,9 @@ while i < len( sys.argv ):
         i += 1
     elif arg == '-seed':
         seed = int(sys.argv[i])
+        i += 1
+    elif arg == '-cmd_en':
+        cmd_en = int(sys.argv[i])
         i += 1
     else:
         die( f'unknown option: {arg}' )
