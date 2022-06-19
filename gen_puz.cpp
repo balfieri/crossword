@@ -328,6 +328,7 @@ int main( int argc, const char * argv[] )
         const char *    word;
         uint32_t        len;
         uint32_t        pos;
+        const char *    a;
         const Entry *   entry;
     };
     std::vector<Word> words;
@@ -345,6 +346,7 @@ int main( int argc, const char * argv[] )
                     Word w;
                     w.word  = pw.word;
                     w.pos   = pw.pos;
+                    w.a     = a.c_str();
                     w.entry = &e;
                     words.push_back( w );
                 }
@@ -369,6 +371,7 @@ int main( int argc, const char * argv[] )
         const char *    word;
         uint32_t        len;
         uint32_t        pos;
+        const char *    a;
         const Entry *   entry;
         uint32_t        x;
         uint32_t        y;
