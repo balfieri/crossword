@@ -195,14 +195,29 @@ void pick_words( std::string a, std::vector<PickedWord>& words )
             } else {
                 // 16-bit char
                 // allowed: àáèéìíòóùú
-                word += ch;
                 dassert( i < (a_len-1), "incomplete special character in answer: " + a );
                 ch = a[++i];
                 if ( ch >= '\x80' && ch <= '\x9f' ) {
                     ch = 0xa0 + ch - 0x80;              // make lower-case
                 }
-                dassert( ch == '\xa0' || ch == '\xa1' || ch == '\xa8' || ch == '\xa9' || ch == '\xac' || ch == '\xad' || ch == '\xb2' || ch == '\xb3' || ch == '\xb9' || ch == '\xba',
-                         "bad special character in answer: " + a );
+
+                // Map these characters to 0..9 so we use only one byte to represent them,
+                // which will make creation of the puzzle much easier.
+                // When we go to write out the puzzle, we'll these characters back.
+                switch( ch )
+                {
+                    case '\xa0': ch = '0'; break;
+                    case '\xa1': ch = '1'; break;
+                    case '\xa8': ch = '2'; break;
+                    case '\xa9': ch = '3'; break;
+                    case '\xac': ch = '4'; break;
+                    case '\xad': ch = '5'; break;
+                    case '\xb2': ch = '6'; break;
+                    case '\xb3': ch = '7'; break;
+                    case '\xb9': ch = '8'; break;
+                    case '\xba': ch = '9'; break;
+                    default:     die( "bad special character in answer:" + a ); break;
+                }
                 word += ch;
             }
         }
@@ -313,6 +328,7 @@ int main( int argc, const char * argv[] )
     struct Word
     {
         std::string     word;
+        uint32_t        len;
         uint32_t        pos;
         const Entry *   entry;
     };
