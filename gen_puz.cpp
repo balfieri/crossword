@@ -242,6 +242,7 @@ int main( int argc, const char * argv[] )
     bool     reverse            = false;
     uint32_t attempts           = 10000;
     uint32_t larger_cutoff      = 7;
+    uint32_t larger_pct         = 50;
     uint32_t start_pct          = 0;
     uint32_t end_pct            = 100;
     bool     html               = true;
@@ -257,6 +258,7 @@ int main( int argc, const char * argv[] )
         } else if ( arg == "-reverse" ) {                       reverse = std::stoi( argv[++i] );
         } else if ( arg == "-attempts" ) {                      attempts = std::stoi( argv[++i] );
         } else if ( arg == "-larger_cutoff" ) {                 larger_cutoff = std::stoi( argv[++i] );
+        } else if ( arg == "-larger_pct" ) {                    larger_pct = std::stoi( argv[++i] );
         } else if ( arg == "-start_pct" ) {                     start_pct = std::stoi( argv[++i] );
         } else if ( arg == "-end_pct" ) {                       end_pct = std::stoi( argv[++i] );
         } else if ( arg == "-html" ) {                          html = std::stoi( argv[++i] );
@@ -401,11 +403,15 @@ int main( int argc, const char * argv[] )
     }
 
     std::map<const Entry *, bool> entries_used;
-    float large_frac = float(0 + rand_n( 80 )) / 100.0;
+    std::map<uint32_t, bool>      words_attempted;
+    float large_frac = float(rand_n( larger_pct )) / 100.0;
     uint32_t attempts_large = float(attempts) * large_frac;
     for( uint32_t i = 0; i < attempts; i++ ) 
     {
         uint32_t wi = rand_n( word_cnt );
+        if ( words_attempted.find( wi ) != words_attempted.end() ) continue;
+        words_attempted[wi] = true;
+
         Word& info = words[wi];
         const Entry *entry = info.entry;
         if ( entries_used.find( entry ) != entries_used.end() ) continue;
