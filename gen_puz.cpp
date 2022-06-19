@@ -376,6 +376,7 @@ int main( int argc, const char * argv[] )
         uint32_t        x;
         uint32_t        y;
         bool            is_across;
+        uint32_t        num;
     };
     char ** grid        = new char *[side];
     char ** across_grid = new char *[side];
@@ -392,7 +393,7 @@ int main( int argc, const char * argv[] )
             grid[x][y]        = '-';
             across_grid[x][y] = '-';
             down_grid[x][y]   = '-';
-            clue_grid[x][y]   = new Clue[2];    // 0=across, 1=down
+            clue_grid[x][y]   = new Clue[2];    // 1=across, 0=down
             for( uint32_t z = 0; z < 2; z++ )
             {
                 clue_grid[x][y][z].len = 0;     // no clue there yet
@@ -400,176 +401,245 @@ int main( int argc, const char * argv[] )
         }
     }
 
-#if 0
-    words_used = {}
-    large_frac = (0 + rand_n( 80 )) / 100.0
-    attempts_large = int( attempts * large_frac )
-    for i in range(attempts):
-        wi = rand_n( word_cnt )
-        info = words[wi]
-        word = info[0]
-        if word in words_used: continue
-        if i < attempts_large and len(word) < larger_cutoff: continue
-        pos = info[1]
-        ans = info[2]
-        entry = info[3]
+    std::map<const Entry *, bool> entries_used;
+    float large_frac = float(0 + rand_n( 80 )) / 100.0;
+    uint32_t attempts_large = float(attempts) * large_frac;
+    for( uint32_t i = 0; i < attempts; i++ ) 
+    {
+        uint32_t wi = rand_n( word_cnt );
+        Word& info = words[wi];
+        const Entry *entry = info.entry;
+        if ( entries_used.find( entry ) != entries_used.end() ) continue;
 
-        best_words = []
-        best_score = 0
-        word_len = len(word)
-        for x in range(side):
-            for y in range(side):
-                if (x + word_len) <= side:
-                    # score across
-                    score = 5 if y == 0 or y == (side-1) else 1 
-                    if x == 0 or (x+word_len-1) == (side-1): score += 1
-                    for ci in range(word_len):
-                        if across_grid[x+ci][y] != '-' or \
-                           (ci == 0 and x > 0 and grid[x-1][y] != '-') or \
-                           (ci == (word_len-1) and (x+ci+1) < side and grid[x+ci+1][y] != '-'): 
-                            score = 0
-                            break
-                        c  = word[ci]
-                        gc = grid[x+ci][y]
-                        if c == gc:
-                            score += 1
-                        elif gc != '-' or \
-                             (y > 0 and grid[x+ci][y-1] != '-') or \
-                             (y < (side-1) and grid[x+ci][y+1] != '-'):
-                            score = 0
-                            break
-                    if score != 0 and score >= best_score:
-                        if score > best_score:
-                            best_score = score
-                            best_words = []
-                        best_words.append( [word, pos, ans, entry, x, y, True ] )
+        const char * word = info.word;
+        uint32_t     word_len = info.len;
+        if ( i < attempts_large && word_len < larger_cutoff ) continue;
 
-                if (y + word_len) <= side:
-                    # score down
-                    score = 5 if x == 0 or x == (side-1) else 1 
-                    if y == 0 or (y+word_len-1) == (side-1): score += 1
-                    for ci in range(word_len):
-                        if down_grid[x][y+ci] != '-' or \
-                           (ci == 0 and y > 0 and grid[x][y-1] != '-') or \
-                           (ci == (word_len-1) and (y+ci+1) < side and grid[x][y+ci+1] != '-'):
-                            score = 0
-                            break
-                        c  = word[ci]
-                        gc = grid[x][y+ci]
-                        if c == gc:
-                            score += 1
-                        elif gc != '-' or \
-                             (x > 0 and grid[x-1][y+ci] != '-') or \
-                             (x < (side-1) and grid[x+1][y+ci] != '-'):
-                            score = 0
-                            break
-                    if score != 0 and score >= best_score:
-                        if score > best_score:
-                            best_score = score
-                            best_words = []
-                        best_words.append( [word, pos, ans, entry, x, y, False] )
-        if best_score > 0: 
-            bi = rand_n( len(best_words) )
-            best   = best_words[bi]
-            word   = best[0]
-            pos    = best[1]
-            ans    = best[2]
-            entry  = best[3]
-            x      = best[4]
-            y      = best[5]
-            across = best[6]
-            which  = 'across' if across else 'down'
-            words_used[word] = best
-            for ci in range(word_len):
-                if across:
-                    grid[x+ci][y] = word[ci]
-                    across_grid[x+ci][y] = word[ci]
-                else:
-                    grid[x][y+ci] = word[ci]
-                    down_grid[x][y+ci] = word[ci]
-            if which in clue_grid[x][y]: die( f'{word}: {which} clue already at [{x},{y}]' )
-            clue_grid[x][y][which] = best;
-            #print( f'{word}: {which} clue added at [{x},{y}]' )
+        uint32_t     pos = info.pos;
+        const char * a   = info.a;
+
+        Clue best;
+        best.len = 0;
+        uint32_t best_score = 0;
+
+        for( uint32_t x = 0; x < side; x++ ) 
+        {
+            for( uint32_t y = 0; y < side; y++ ) 
+            {
+                if ( (x + word_len) <= side ) {
+                    // score across
+                    uint32_t score = (y == 0 || y == (side-1)) ? 5 : 1; 
+                    if ( x == 0 || (x+word_len-1) == (side-1) ) score++;
+                    for( uint32_t ci = 0; ci < word_len; ci++ ) 
+                    {
+                        if ( across_grid[x+ci][y] != '-' ||
+                             (ci == 0 && x > 0 && grid[x-1][y] != '-') || 
+                             (ci == (word_len-1) && (x+ci+1) < side && grid[x+ci+1][y] != '-') ) {
+                            score = 0;
+                            break;
+                        }
+                        char c  = word[ci];
+                        char gc = grid[x+ci][y];
+                        if ( c == gc ) {
+                            score++;
+                        } else if ( gc != '-' ||
+                                    (y > 0 and grid[x+ci][y-1] != '-') || 
+                                    (y < (side-1) and grid[x+ci][y+1] != '-') ) {
+                            score = 0;
+                            break;
+                        }
+                    }
+                    if ( score != 0 && score > best_score ) {
+                        best.word  = word;
+                        best.len   = word_len;
+                        best.pos   = pos;
+                        best.a     = a;
+                        best.entry = entry;
+                        best.x     = x;
+                        best.y     = y;
+                        best.is_across = true;
+                        best_score = score;
+                    }
+                }
+
+                if ( (y + word_len) <= side ) {
+                    // score down
+                    uint32_t score = (x == 0 || x == (side-1)) ? 5 : 1;
+                    if ( y == 0 || (y+word_len-1) == (side-1) ) score++;
+                    for( uint32_t ci = 0; ci < word_len; ci++ )
+                    {
+                        if ( down_grid[x][y+ci] != '-' || 
+                             (ci == 0 && y > 0 && grid[x][y-1] != '-') || 
+                             (ci == (word_len-1) && (y+ci+1) < side && grid[x][y+ci+1] != '-') ) {
+                            score = 0;
+                            break;
+                        }
+                        char c  = word[ci];
+                        char gc = grid[x][y+ci];
+                        if ( c == gc ) {
+                            score++;
+                        } else if ( gc != '-' || 
+                                    (x > 0 && grid[x-1][y+ci] != '-') || 
+                                    (x < (side-1) && grid[x+1][y+ci] != '-') ) {
+                            score = 0;
+                            break;
+                        }
+                    }
+                    if ( score != 0 && score > best_score ) {
+                        best.word  = word;
+                        best.len   = word_len;
+                        best.pos   = pos;
+                        best.a     = a;
+                        best.entry = entry;
+                        best.x     = x;
+                        best.y     = y;
+                        best.is_across = false;
+                        best_score = score;
+                    }
+                }
+            }
+        }
+
+        if ( best_score > 0 ) {
+            entries_used[entry] = true;
+            uint32_t x = best.x;
+            uint32_t y = best.y;
+            bool     is_across = best.is_across;
+            for( uint32_t ci = 0; ci < word_len; ci++ ) 
+            {
+                if ( is_across ) {
+                    grid[x+ci][y] = word[ci];
+                    across_grid[x+ci][y] = word[ci];
+                } else {
+                    grid[x][y+ci] = word[ci];
+                    down_grid[x][y+ci] = word[ci];
+                }
+            }
+            dassert( clue_grid[x][y][is_across].len == 0, "already have a clue in place" );
+            clue_grid[x][y][is_across] = best;
+        }
+    }
 
     //-----------------------------------------------------------------------
     // Generate .html or .puz file.
     //-----------------------------------------------------------------------
 
-    if html:
-        print( f'<!DOCTYPE html>' )
-        print( f'<html lang="en">' )
-        print( f'<head>' )
-        print( f'<meta charset="utf-8"/>' )
-        print( f'<meta name="viewport" content="width=device-width, initial-scale=1"/>' )
-        print( f'<link rel="stylesheet" type="text/css" href="exolve-m.css?v1.35"/>' )
-        print( f'<script src="exolve-m.js?v1.35"></script>' )
-        print( f'<script src="exolve-from-ipuz.js?v1.35"></script>' )
-        print( f'' )
-        print( f'<title>Test-Ipuz-Solved</title>' )
-        print( f'' )
-        print( f'</head>' )
-        print( f'<body>' )
-        print( f'<script>' )
-        print( f'let ipuz =' )
+    if ( html ) {
+        std::cout << "<!DOCTYPE html>\n";
+        std::cout << "<html lang=\"en\">\n";
+        std::cout << "<head>\n";
+        std::cout << "<meta charset=\"utf-8\"/>\n";
+        std::cout << "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>\n";
+        std::cout << "<link rel=\"stylesheet\" type=\"text/css\" href=\"exolve-m.css?v1.35\"/>\n";
+        std::cout << "<script src=\"exolve-m.js?v1.35\"></script>\n";
+        std::cout << "<script src=\"exolve-from-ipuz.js?v1.35\"></script>\n";
+        std::cout << "\n";
+        std::cout << "<title>Test-Ipuz-Solved</title>\n";
+        std::cout << "\n";
+        std::cout << "</head>\n";
+        std::cout << "<body>\n";
+        std::cout << "<script>\n";
+        std::cout << "let ipuz =\n";
 
     // header
-    print( f'{{' )
-    print( f'"origin": "Bob Alfieri",' )
-    print( f'"version": "http://ipuz.org/v1",' )
-    print( f'"kind": ["http://ipuz.org/crossword#1"],' )
-    //print( f'"copyright": "2022 Robert A. Alfieri (this puzzle), Viresh Ratnakar (crossword program)",' );
-    //print( f'"author": "Bob Alfieri",' )
-    print( f'"publisher": "Robert A. Alfieri",' )
-    print( f'"title": "{title}",' )
-    print( f'"intro": "",' )
-    print( f'"difficulty": "Moderate",' )
-    print( f'"empty": "0",' )
-    print( f'"dimensions": {{ "width": {side}, "height": {side} }},' )
-    print()
+    std::cout << "{\n";
+    std::cout << "\"origin\": \"Bob Alfieri\",\n";
+    std::cout << "\"version\": \"http://ipuz.org/v1\",\n";
+    std::cout << "\"kind\": [\"http://ipuz.org/crossword#1\"],\n";
+    //std::cout << "\"copyright\": \"2022 Robert A. Alfieri (this puzzle), Viresh Ratnakar (crossword program)\",\n";
+    //std::cout << "\"author\": \"Bob Alfieri\",\n";
+    std::cout << "\"publisher\": \"Robert A. Alfieri\",\n";
+    std::cout << "\"title\": \"" << title << "\",\n";
+    std::cout << "\"intro\": \"\",\n";
+    std::cout << "\"difficulty\": \"Moderate\",\n";
+    std::cout << "\"empty\": \"0\",\n";
+    std::cout << "\"dimensions\": { \"width\": " << side << ", \"height\": " << side << " },\n";
+    std::cout << "\n";
 
     // solution
-    print( f'"solution": [' )
-    for y in range(side):
-        for x in range(side):
-            print( f'    [' if x == 0 else ', ', end='' )
-            ch = '#' if grid[x][y] == '-' else grid[x][y].upper()
-            print( f'"{ch}"', end='' )
-        comma = ',' if y != (side-1) else ''
-        print( f']{comma}' )
-    print( f'],' )
+    std::cout << "\"solution\": [\n";
+    for( uint32_t y = 0; y < side; y++ )
+    {
+        for( uint32_t x = 0; x < side; x++ )
+        {
+            if ( x == 0 ) {
+                std::cout << "    [";
+            } else {
+                std::cout << ",";
+            }
+            std::cout << "\"";
+            char ch = grid[x][y];
+            if ( ch == '-' ) {
+                std::cout << "#";
+            } else if ( ch >= 'a' && ch <= 'z' ) {
+                ch = 'A' + ch - 'a';
+                std::cout << ch;
+            } else {
+                // convert back to special character and make it uppercase
+                dassert( ch >= '0' && ch <= '9', "unexpected special char in grid" );
+                switch( ch )
+                {
+                    case '0'; std::cout << "À"; break;
+                    case '1'; std::cout << "Á"; break;
+                    case '2'; std::cout << "È"; break;
+                    case '3'; std::cout << "É"; break;
+                    case '4'; std::cout << "Ì"; break;
+                    case '5'; std::cout << "Í"; break;
+                    case '6'; std::cout << "Ò"; break;
+                    case '7'; std::cout << "Ó"; break;
+                    case '8'; std::cout << "Ù"; break;
+                    case '9'; std::cout << "U'"; break;
+                    default:  die( "something is wrong" ); break;
+                
+            }
+            std::cout << "\"";
+        }
+        std::cout << "]";
+        if ( y != (side-1) ) std::cout << ",";
+        std::cout << "\n";
+    }
+    std::cout << "],\n";
 
     // labels
-    print( f'"puzzle": [' )
-    clue_num = 1
-    for y in range(side): 
-        for x in range(side):
-            print( '    [' if x == 0 else ', ', end='' )
-            info = clue_grid[x][y]
-            if 'across' in info or 'down' in info:
-                 print( f'{clue_num:3}', end='' )
-                 info['num'] = clue_num
-                 clue_num += 1
-            elif grid[x][y] != '-':
-                 print( '  0', end='' )
-            else: 
-                 print( '"#"', end='' )
-        comma = ',' if y != (side-1) else ''
-        print( f']{comma}' )            
-    print( f'],' )
+    std::cout << "\"puzzle\": [\n";
+    uint32_t clue_num = 1;
+    for( uint32_t y = 0; y < side; y++ )
+    {
+        for( uint32_t x = 0; x < side; x++ )
+            if ( x == 0 ) {
+                std::cout << "    [";
+            } else {
+                std::cout << ", ";
+            }
+            if ( clue_grid[x][y][0].len != 0 || clue_grid[x][y][1] != 0 ) {
+                std::cout << clue_num;
+                clue_grid[x][y][0].num = clue_num;
+                clue_grid[x][y][1].num = clue_num;
+                clue_num++; 
+            } else if ( grid[x][y] != '-' ) {
+                std::cout << " 0";
+            } else {
+                std::cout << "\"#\"";
+            }
+        }
+        std::cout << "]";
+        if ( y != (side-1) ) std::cout << ",";
+    }
+    std::cout << "]," << "\n";
 
     // clues
-    print( f'"clues": {{' )
+    std::cout << "\"clues\": {\n";
     for which_mc in ['Across', 'Down']:
-        print( f'    "{which_mc}": [', end='' )
-        which = which_mc.lower()
+        std::cout << "    \"{which_mc}\": [', end='' << "\n";
+        which = which_mc.lower(<< "\n";
         have_one = False
         for y in range(side):
             for x in range(side):
                 cinfo = clue_grid[x][y]
                 if which in cinfo: 
-                    if have_one: print( ', ', end='' )
+                    if have_one: print( ', ', end='' << "\n";
                     have_one = True
-                    print()
+                    print(<< "\n";
                     winfo = cinfo[which]
                     num   = cinfo['num']
                     word  = winfo[0]
@@ -581,22 +651,23 @@ int main( int argc, const char * argv[] )
                     ans_  = ''
                     for i in range(len(ans)):
                         ans_ += '_' if (i >= first and i <= last) else ans[i]
-                    clue  = f'"{ques} ==> {ans_}"' 
-                    print( f'        [{num}, {clue}]', end='' )
+                    clue  = f'\"{ques} ==> {ans_}\"' 
+                    std::cout << "        [{num}, {clue}]', end='' << "\n";
         comma = ',' if which == 'across' else ''
-        print( f'\n    ]{comma}' )
-    print( f'}},' )
-    print( f'}}' )
+        std::cout << "\n    ]{comma}' << "\n";
+    std::cout << "},\n";
+    std::cout << "}\n";
 
-    if html:
-        print( f'text = exolveFromIpuz(ipuz)' )
-        #print( f'text += \'\\n    exolve-option: allow-chars:ÀÁÈÉÌÍÒÓÙÚ\\n\'' )
-        print( f'text += \'\\n    exolve-language: it Latin\\n\'' )
-        print( f'text += \'\\n    exolve-end\\n\'' )
-        print( f'createExolve(text)' )
-        print( f'</script>' )
-        print( f'</body>' )
-        print( f'</html>' )
-#endif
+    if ( html ) {
+        std::cout << "text = exolveFromIpuz(ipuz)\n";
+        #std::cout << "text += '\\n    exolve-option: allow-chars:ÀÁÈÉÌÍÒÓÙÚ\\n'\n";
+        std::cout << "text += '\\n    exolve-language: it Latin\\n'\n";
+        std::cout << "text += '\\n    exolve-end\\n'\n";
+        std::cout << "createExolve(text)\n";
+        std::cout << "</script>\n";
+        std::cout << "</body>\n";
+        std::cout << "</html>\n";
+    }
+
     return 0;
 }
