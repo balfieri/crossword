@@ -44,7 +44,7 @@ def cmd( c, echo=True, echo_stdout=False, can_die=True ):
 # process command line args
 #-----------------------------------------------------------------------
 side = 15
-count = 100
+count = 50
 today = datetime.date.today()
 year = today.year - 2000
 month = today.month
@@ -111,12 +111,14 @@ for subject_info in subjects:
     do_recent = subject_info[2]
     s += f'<section style="clear: left">\n'
     s += f'<br>\n'
+    subjects_s = all_s if subject == 'all_lists' else subject
+    entry_cnt = int( cmd( f'./gen_puz {subjects_s} -print_entry_cnt_and_exit 1' ) )
     if subject != 'all_lists':
-        s += f'<h2><a href="https://github.com/balfieri/study/blob/master/{subject}.txt">{subject}</a></h2>'
+        s += f'<h2><a href="https://github.com/balfieri/study/blob/master/{subject}.txt">{subject}</a> ({entry_cnt} entries)</h2>'
         if all_s != '': all_s += ','
         all_s += subject
     else:
-        s += f'<h2>{subject}</h2>'
+        s += f'<h2>{subject} ({entry_cnt} entries)</h2>'
     for reverse in range(2):
         clue_lang = 'Italian' if reverse == 0 else 'English'
         for recent in range(2):
@@ -127,8 +129,7 @@ for subject_info in subjects:
             s += f'<b>{clue_lang} ({recency}):</b><br>'
             for i in range(count):
                 title = f'{subject}_s{seed}_r{reverse}'
-                subjects = all_s if subject == 'all_lists' else subject
-                cmd( f'./gen_puz {subjects} -side {side} -seed {seed} -reverse {reverse} -start_pct {start_pct} -title {title} > www/{title}.html' )
+                cmd( f'./gen_puz {subjects_s} -side {side} -seed {seed} -reverse {reverse} -start_pct {start_pct} -title {title} > www/{title}.html' )
                 seed += 1
                 s += f'<a href="{title}.html"><div class="rectangle" style="background-color: {color}">{i}</div></a>\n'
 

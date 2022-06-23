@@ -246,6 +246,7 @@ int main( int argc, const char * argv[] )
     uint32_t start_pct          = 0;
     uint32_t end_pct            = 100;
     bool     html               = true;
+    bool     print_entry_cnt_and_exit = false;
     std::string title           = "";
 
     for( int i = 2; i < argc; i++ )
@@ -263,6 +264,7 @@ int main( int argc, const char * argv[] )
         } else if ( arg == "-end_pct" ) {                       end_pct = std::stoi( argv[++i] );
         } else if ( arg == "-html" ) {                          html = std::stoi( argv[++i] );
         } else if ( arg == "-title" ) {                         title = argv[++i];
+        } else if ( arg == "-print_entry_cnt_and_exit" ) {      print_entry_cnt_and_exit = std::stoi( argv[++i] );
         } else {                                                die( "unknown option: " + arg ); }
     }
     rand_thread_seed( seed );   // needed only if random numbers are used (currently not)
@@ -318,6 +320,10 @@ int main( int argc, const char * argv[] )
     }
 
     uint32_t entry_cnt   = entries.size();
+    if ( print_entry_cnt_and_exit ) {
+        std::cout << entry_cnt;
+        return 0;
+    }
     uint32_t entry_first = float(start_pct)*float(entry_cnt)/100.0;
     uint32_t entry_last  = std::min( uint32_t( float(end_pct)*float(entry_cnt)/100.0 ), entry_cnt-1 );
 
