@@ -435,7 +435,6 @@ int main( int argc, const char * argv[] )
                 if ( (x + word_len) <= side ) {
                     // score across
                     uint32_t score = (y == 0 || y == (side-1)) ? 5 : 1; 
-                    if ( x == 0 || (x+word_len-1) == (side-1) ) score++;
                     for( uint32_t ci = 0; ci < word_len; ci++ ) 
                     {
                         if ( across_grid[x+ci][y] != '-' ||
@@ -471,7 +470,6 @@ int main( int argc, const char * argv[] )
                 if ( (y + word_len) <= side ) {
                     // score down
                     uint32_t score = (x == 0 || x == (side-1)) ? 5 : 1;
-                    if ( y == 0 || (y+word_len-1) == (side-1) ) score++;
                     for( uint32_t ci = 0; ci < word_len; ci++ )
                     {
                         if ( down_grid[x][y+ci] != '-' || 
