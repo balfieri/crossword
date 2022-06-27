@@ -43,7 +43,7 @@ def cmd( c, echo=True, echo_stdout=False, can_die=True ):
 #-----------------------------------------------------------------------
 # process command line args
 #-----------------------------------------------------------------------
-side = 15
+side = 20
 count = 50
 today = datetime.date.today()
 year = today.year - 2000
