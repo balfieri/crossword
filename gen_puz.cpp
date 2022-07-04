@@ -238,7 +238,7 @@ int main( int argc, const char * argv[] )
     auto     subjects           = split( subjects_s, ',' );
     uint64_t seed               = uint64_t( clock_time() );
     uint32_t thread_cnt         = thread_hardware_thread_cnt();   // actual number of CPU HW threads
-    uint32_t side               = 15;
+    uint32_t side               = 17;
     bool     reverse            = false;
     uint32_t attempts           = 10000;
     uint32_t larger_cutoff      = 7;
